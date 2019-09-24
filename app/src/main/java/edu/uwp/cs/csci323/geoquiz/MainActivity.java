@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.xml.datatype.Duration;
 
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final String KEY_INDEX = "index";
     private static final String KEY_INDEX2 = "index";
+    private static final String KEY_INDEX3 = "index";
     private static int score = 0;
     private int messageId = 0;
     private String end = "";
@@ -40,7 +43,9 @@ public class MainActivity extends AppCompatActivity {
 
     };
     private int mCurrentIndex = 0;
-    private int mForcedIndex = 0;
+    private ArrayList<Integer> answers = new ArrayList<Integer>(mQuestionBank.length);
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,126 +53,20 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_main);
 
+        fillArray();
+
         if (savedInstanceState != null){
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX,0);
-            mForcedIndex = savedInstanceState.getInt(KEY_INDEX,0);
+            //answers = savedInstanceState.getIntegerArrayList(KEY_INDEX2);
+            //score = savedInstanceState.getInt(KEY_INDEX3, 0);
         }
 
-
-
-        mQuestionTextView = (TextView) findViewById(R.id.question_text_window);
-
-
-
-        mTrueButton = (Button) findViewById(R.id.true_button);
-        mTrueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v){
-                checkAnswer(true);
-                mFalseButton.setEnabled(false);
-                mTrueButton.setEnabled(false);
-
-            }
-        });
-
-        mFalseButton = (Button) findViewById(R.id.false_button);
-        mFalseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v){
-                checkAnswer(false);
-                mFalseButton.setEnabled(false);
-                mTrueButton.setEnabled(false);
-            }
-        });
-
-
-
-        mNextButton = findViewById(R.id.next_button);
-
-        mNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mCurrentIndex == mQuestionBank.length-1){
-                    if(mForcedIndex == mQuestionBank.length){
-                        double percentage = ((double)score/(double)mForcedIndex) * 100;
-
-                        end = "You have Answered " + mForcedIndex + " Question. You got " + score + " right. Your percentage is " + (int)percentage + "%";
-                        Toast gravity = Toast.makeText(MainActivity.this, end, Toast.LENGTH_SHORT);
-                        gravity.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 170);
-                        gravity.show();
-                    }
-                    mCurrentIndex = mQuestionBank.length-1;
-
-
-                }else {
-                    mCurrentIndex +=1;
-                    updateQuestion();
-
-
-                    if (mCurrentIndex == mForcedIndex) {
-                        mTrueButton.setEnabled(true);
-                        mFalseButton.setEnabled(true);
-
-                    } else {
-                        mTrueButton.setEnabled(false);
-                        mFalseButton.setEnabled(false);
-
-                    }
-                }
-
-            }
-        });
-
-        // Chapter two challenge one
-        mQuestionTextView =  findViewById(R.id.question_text_window);
-        mQuestionTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mCurrentIndex == mQuestionBank.length-1){
-
-                    mCurrentIndex = mQuestionBank.length-1;
-
-                }else {
-                    mCurrentIndex +=1;
-                    updateQuestion();
-                    if (mCurrentIndex == mForcedIndex) {
-                        mTrueButton.setEnabled(true);
-                        mFalseButton.setEnabled(true);
-
-                    } else {
-                        mTrueButton.setEnabled(false);
-                        mFalseButton.setEnabled(false);
-                    }
-                }
-
-            }
-        });
-
-        // chapter 2 challenge 2
-        mPrevButton = findViewById(R.id.previous_button);
-        mPrevButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mCurrentIndex == 0){
-
-                    mCurrentIndex = 0;
-
-                }else {
-                    mCurrentIndex -=1;
-                    updateQuestion();
-                    if (mCurrentIndex == mForcedIndex) {
-                        mTrueButton.setEnabled(true);
-                        mFalseButton.setEnabled(true);
-
-                    } else {
-                        mTrueButton.setEnabled(false);
-                        mFalseButton.setEnabled(false);
-                    }
-                }
-            }
-        });
+        viewById();
+        setOnClick();
         updateQuestion();
+
     }
+
     @Override
     public void onStart(){
         super.onStart();
@@ -188,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX,mCurrentIndex);
-        savedInstanceState.putInt(KEY_INDEX,mForcedIndex);
+        savedInstanceState.putIntegerArrayList(KEY_INDEX2,answers);
+        //savedInstanceState.putInt(KEY_INDEX3,score);
     }
 
     @Override
@@ -211,17 +111,123 @@ public class MainActivity extends AppCompatActivity {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         if (userPressedTrue == answerIsTrue) {
             messageId = R.string.correct_toast;
-            score +=1;
-
-
+            answers.add(mCurrentIndex,1);
+            score ++;
         } else {
             messageId = R.string.incorrect_toast;
+            answers.add(mCurrentIndex, 1);
+
         }
         //Challenge: Chapter one Challenge one
         Toast gravity = Toast.makeText(MainActivity.this, messageId, Toast.LENGTH_SHORT);
         gravity.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 170);
         gravity.show();
-        mForcedIndex +=1;
+        mTrueButton.setEnabled(false);
+        mFalseButton.setEnabled(false);
+
 
     }
+    private void enable(){
+        if(answers.get(mCurrentIndex).equals(0)){
+            mFalseButton.setEnabled(true);
+            mTrueButton.setEnabled(true);
+        } else {
+            mTrueButton.setEnabled(false);
+            mFalseButton.setEnabled(false);
+        }
+    }
+    private void score(){
+        if(mCurrentIndex == mQuestionBank.length-1){
+            double percentage = ((double)score/(double)mQuestionBank.length) * 100;
+
+            end = "You have Answered " + mQuestionBank.length + " Question. You got " + score + " right. Your percentage is " + (int)percentage + "%";
+            Toast gravity = Toast.makeText(MainActivity.this, end, Toast.LENGTH_SHORT);
+            gravity.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 170);
+            gravity.show();
+        }
+    }
+
+    private void fillArray(){
+        for (int i = 0; i < mQuestionBank.length; i++) {
+            answers.add(i, 0);
+        }
+    }
+
+    private void viewById(){
+        mQuestionTextView = (TextView) findViewById(R.id.question_text_window);
+        mTrueButton = (Button) findViewById(R.id.true_button);
+        mFalseButton = (Button) findViewById(R.id.false_button);
+        mNextButton = findViewById(R.id.next_button);
+        mPrevButton = findViewById(R.id.previous_button);
+
+    }
+    private void setOnClick(){
+        mTrueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                checkAnswer(true);
+            }
+        });
+
+        mFalseButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v){
+                checkAnswer(false);
+            }
+        });
+
+
+
+        mNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                if (mCurrentIndex == mQuestionBank.length-1){
+                    score();
+                    mCurrentIndex = mQuestionBank.length-1;
+
+                }else {
+                    mCurrentIndex++;
+                    updateQuestion();
+                    enable();
+
+                }
+            }
+        });
+
+        // Chapter two challenge one
+        mQuestionTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mCurrentIndex == mQuestionBank.length-1){
+                    score();
+                    mCurrentIndex = mQuestionBank.length-1;
+
+                }else {
+                    mCurrentIndex++;
+                    updateQuestion();
+                    enable();
+
+                }
+            }
+        });
+
+        // chapter 2 challenge 2
+        mPrevButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mCurrentIndex == 0){
+                    mCurrentIndex = 0;
+
+                }else {
+                    mCurrentIndex--;
+                    updateQuestion();
+                    enable();
+                }
+            }
+        });
+    }
+
 }
