@@ -2,6 +2,7 @@ package edu.uwp.cs.csci323.geoquiz;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     // chapter two challenge 3
     private ImageButton mNextButton;
     private ImageButton mPrevButton;
+    private Button mCheatButton;
     private TextView mQuestionTextView;
     private static final String TAG = "MainActivity";
     private static final String KEY_INDEX = "index";
@@ -155,13 +157,13 @@ public class MainActivity extends AppCompatActivity {
         mFalseButton = (Button) findViewById(R.id.false_button);
         mNextButton = findViewById(R.id.next_button);
         mPrevButton = findViewById(R.id.previous_button);
+        mCheatButton = findViewById(R.id.cheat_button);
 
     }
     private void setOnClick(){
         mTrueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-
                 answer [mCurrentIndex]=true;
                 checkAnswer(true);
             }
@@ -173,8 +175,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v){
                 answer [mCurrentIndex]=true;
                 checkAnswer(false);
-
-
             }
         });
 
@@ -183,8 +183,6 @@ public class MainActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 if (mCurrentIndex == mQuestionBank.length-1){
                     score();
                     mCurrentIndex = mQuestionBank.length-1;
@@ -196,6 +194,16 @@ public class MainActivity extends AppCompatActivity {
                     enable();
 
                 }
+            }
+        });
+
+        mCheatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent intent = CheatActivity.newIntent(MainActivity.this, answerIsTrue);
+                startActivity(intent);
+
             }
         });
 
