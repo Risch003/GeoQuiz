@@ -2,6 +2,7 @@ package edu.uwp.cs.csci323.geoquiz;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_INDEX = "index";
     private static final String KEY_INDEX2 = "anything";
     private static final String KEY_INDEX3 = "somerthinf";
+    private static final int REQUEST_CODE_CHEAT = 0;
     private static int score = 0;
     private int messageId = 0;
     private String end = "";
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     };
     private int mCurrentIndex = 0;
+    private boolean mIsCheater;
         private boolean answer[];
 
 
@@ -64,6 +67,21 @@ public class MainActivity extends AppCompatActivity {
         enable();
         setOnClick();
         updateQuestion();
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode,int resultCode, Intent data){
+        if (resultCode != Activity.RESULT_OK){
+            return;
+        }
+
+        if (requestCode == REQUEST_CODE_CHEAT){
+            if (data == null){
+                return;
+            }
+            mIsCheater = CheatActivity.wasAnswerShown(data);
+        }
 
     }
 
@@ -109,12 +127,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkAnswer(boolean userPressedTrue) {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
-        if (userPressedTrue == answerIsTrue) {
-            messageId = R.string.correct_toast;
-            score ++;
-        } else {
-            messageId = R.string.incorrect_toast;
 
+        if(mIsCheater){
+            messageId = R.string.judgment_toast;
+        } else {
+            if (userPressedTrue == answerIsTrue) {
+                messageId = R.string.correct_toast;
+                score++;
+            } else {
+                messageId = R.string.incorrect_toast;
+
+            }
         }
         //Challenge: Chapter one Challenge one
         Toast gravity = Toast.makeText(MainActivity.this, messageId, Toast.LENGTH_SHORT);
@@ -190,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     //mCurrentIndex +=1;
                     mCurrentIndex=(mCurrentIndex+1)%mQuestionBank.length;
+                    mIsCheater = false;
                     updateQuestion();
                     enable();
 
@@ -202,8 +226,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(MainActivity.this, answerIsTrue);
-                startActivity(intent);
-
+                startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
         });
 
@@ -217,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }else {
                     mCurrentIndex =+1;
+                    mIsCheater = false;
                     updateQuestion();
                     enable();
 
@@ -233,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }else {
                     mCurrentIndex-=1;
+                    mIsCheater = false;
                     updateQuestion();
                     enable();
                 }
