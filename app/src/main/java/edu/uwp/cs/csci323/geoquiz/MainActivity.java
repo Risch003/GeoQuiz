@@ -27,8 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mQuestionTextView;
     private static final String TAG = "MainActivity";
     private static final String KEY_INDEX = "index";
-    private static final String KEY_INDEX2 = "index";
-    private static final String KEY_INDEX3 = "index";
+    private static final String KEY_INDEX2 = "anything";
+    private static final String KEY_INDEX3 = "somerthinf";
     private static int score = 0;
     private int messageId = 0;
     private String end = "";
@@ -43,8 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     };
     private int mCurrentIndex = 0;
-    private ArrayList<Integer> answers = new ArrayList<Integer>(mQuestionBank.length);
-
+        private boolean answer[];
 
 
     @Override
@@ -52,16 +51,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_main);
-
-        fillArray();
-
+        answer= new  boolean[mQuestionBank.length];
         if (savedInstanceState != null){
-            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX,0);
-            //answers = savedInstanceState.getIntegerArrayList(KEY_INDEX2);
-            //score = savedInstanceState.getInt(KEY_INDEX3, 0);
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            answer = savedInstanceState.getBooleanArray(KEY_INDEX2);
+            score = savedInstanceState.getInt(KEY_INDEX3, 0);
         }
 
         viewById();
+        enable();
         setOnClick();
         updateQuestion();
 
@@ -87,8 +85,8 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX,mCurrentIndex);
-        savedInstanceState.putIntegerArrayList(KEY_INDEX2,answers);
-        //savedInstanceState.putInt(KEY_INDEX3,score);
+        savedInstanceState.putBooleanArray(KEY_INDEX2,answer);
+        savedInstanceState.putInt(KEY_INDEX3,score);
     }
 
     @Override
@@ -111,11 +109,9 @@ public class MainActivity extends AppCompatActivity {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         if (userPressedTrue == answerIsTrue) {
             messageId = R.string.correct_toast;
-            answers.add(mCurrentIndex,1);
             score ++;
         } else {
             messageId = R.string.incorrect_toast;
-            answers.add(mCurrentIndex, 1);
 
         }
         //Challenge: Chapter one Challenge one
@@ -128,12 +124,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void enable(){
-        if(answers.get(mCurrentIndex).equals(0)){
-            mFalseButton.setEnabled(true);
-            mTrueButton.setEnabled(true);
-        } else {
-            mTrueButton.setEnabled(false);
+        if(answer[mCurrentIndex]){
             mFalseButton.setEnabled(false);
+            mTrueButton.setEnabled(false);
+        } else {
+            mTrueButton.setEnabled(true);
+            mFalseButton.setEnabled(true);
         }
     }
     private void score(){
@@ -149,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void fillArray(){
         for (int i = 0; i < mQuestionBank.length; i++) {
-            answers.add(i, 0);
+            //answers.add(i, 0);
         }
     }
 
@@ -165,6 +161,8 @@ public class MainActivity extends AppCompatActivity {
         mTrueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
+
+                answer [mCurrentIndex]=true;
                 checkAnswer(true);
             }
         });
@@ -173,7 +171,10 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v){
+                answer [mCurrentIndex]=true;
                 checkAnswer(false);
+
+
             }
         });
 
@@ -189,7 +190,8 @@ public class MainActivity extends AppCompatActivity {
                     mCurrentIndex = mQuestionBank.length-1;
 
                 }else {
-                    mCurrentIndex++;
+                    //mCurrentIndex +=1;
+                    mCurrentIndex=(mCurrentIndex+1)%mQuestionBank.length;
                     updateQuestion();
                     enable();
 
@@ -206,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                     mCurrentIndex = mQuestionBank.length-1;
 
                 }else {
-                    mCurrentIndex++;
+                    mCurrentIndex =+1;
                     updateQuestion();
                     enable();
 
@@ -222,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                     mCurrentIndex = 0;
 
                 }else {
-                    mCurrentIndex--;
+                    mCurrentIndex-=1;
                     updateQuestion();
                     enable();
                 }
